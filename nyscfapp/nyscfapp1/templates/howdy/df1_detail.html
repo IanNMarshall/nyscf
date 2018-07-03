@@ -1,0 +1,22 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>Detail Filer View</h1>
+
+    <table summary="filers_detail">
+		<tr><td>filer_id </td><td>{{ Df1.filer_id  }}<td></tr>
+		<tr><td>filer_name </td><td>{{ Df1.filer_name  }}<td></tr>
+		<tr><td>filer_type </td><td>{{ Df1.filer_type  }}<td></tr>
+		<tr><td>status </td><td>{{ Df1.status  }}<td></tr>
+		<tr><td>committee_type </td><td>{{ Df1.committee_type  }}<td></tr>
+		<tr><td>office </td><td>{{ Df1.office  }}<td></tr>
+		<tr><td>district </td><td>{{ Df1.district  }}<td></tr>
+		<tr><td>treas_first_name </td><td>{{ Df1.treas_first_name  }}<td></tr>
+		<tr><td>treas_last_name </td><td>{{ Df1.treas_last_name  }}<td></tr>
+		<tr><td>address </td><td>{{ Df1.address  }}<td></tr>
+		<tr><td>city </td><td>{{ Df1.city  }}<td></tr>
+		<tr><td>state </td><td>{{ Df1.state  }}<td></tr>
+		<tr><td>zip</td><td>{{ Df1.zip }}<td></tr>
+
+    </table>      
+{% endblock %}

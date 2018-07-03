@@ -1,0 +1,31 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+{% load bootstrap3 %}
+<h1>Detail Filer View</h1>
+
+<table summary="filers_detail">
+	<tr><th>Context</th><th>Filer Details</th>
+	<tr><td>filer_id </td><td>{{ df1.filer_id  }}</td></tr>
+	<tr><td>filer_name </td><td>{{ df1.filer_name  }}</td></tr>
+	<tr><td>filer_type </td><td>{{ df1.filer_type  }}</td></tr>
+	<tr><td>status </td><td>{{ df1.status  }}</td></tr>
+	<tr><td>committee_type </td><td>{{ df1.committee_type  }}</td></tr>
+	<tr><td>office </td><td>{{ df1.office  }}</td></tr>
+	<tr><td>district </td><td>{{ df1.district  }}</td></tr>
+	<tr><td>treas_first_name </td><td>{{ df1.treas_first_name  }}</td></tr>
+	<tr><td>treas_last_name </td><td>{{ df1.treas_last_name  }}</td></tr>
+	<tr><td>address </td><td>{{ df1.address  }}</td></tr>
+	<tr><td>city </td><td>{{ df1.city  }}</td></tr>
+	<tr><td>state </td><td>{{ df1.state  }}</td></tr>
+	<tr><td>zip</td><td>{{ df1.zip }}</td></tr>
+
+</table>
+<br></br>
+<h2>All Contributions Data For: {{df1.filer_name}}</h2>
+{% load export_url from django_tables2 %}
+<a href=" {% export_url "csv" %} ">Export to CSV</a>
+{% load render_table from django_tables2 %}
+{% render_table table 'django_tables2/bootstrap.html' %}
+{% endblock %}

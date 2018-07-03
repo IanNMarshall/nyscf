@@ -1,0 +1,37 @@
+<!-- howdy/templates/about.html -->
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+    <h1>Welcome to the Hank Page</h1>
+    <p>
+    Below find images of Hank.
+    </p>
+    <div>
+    <div class="responsive">
+      <div class="gallery">
+        <a target="_blank" href="/media/hank0.jpg">
+          <img src="/media/hank0.jpg" alt="Hank 0" width=25% height=25%>
+        </a>
+        <div class="desc">Hank</div>
+      </div>
+    </div>
+    <div class="responsive">
+      <div class="gallery">
+        <a target="_blank" href="/media/hank1.jpg">
+          <img src="/media/hank1.jpg" alt="Hank 1" width=25% height=25%>
+        </a>
+        <div class="desc">Hank</div>
+      </div>
+    </div>
+    <div class="responsive">
+      <div class="gallery">
+        <a target="_blank" href="/media/hank2.jpg">
+          <img src="/media/hank2.jpg" alt="Hank 2" width=25% height=25%>
+        </a>
+        <div class="desc">Also Hank</div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}

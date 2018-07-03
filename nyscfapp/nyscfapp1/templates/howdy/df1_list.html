@@ -1,0 +1,47 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+    <h1>All Filer List</h1>
+
+    {% if df1_list %}
+    <table summary="filers">
+      <tr>
+        <th>filer_id </th>
+        <th>filer_name </th>
+        <th>filer_type </th>
+        <th>status </th>
+        <th>committee_type </th>
+        <th>office </th>
+        <th>district </th>
+        <th>treas_first_name </th>
+        <th>treas_last_name </th>
+        <th>address </th>
+        <th>city </th>
+        <th>state </th>
+        <th>zip</th>
+
+      </tr>
+
+      {% for f in df1_list|slice:":25" %}
+      <tr>
+        <td>{{ f.filer_id  }}</td>
+        <td>{{ f.filer_name  }}</td>
+        <td>{{ f.filer_type  }}</td>
+        <td>{{ f.status  }}</td>
+        <td>{{ f.committee_type  }}</td>
+        <td>{{ f.office  }}</td>
+        <td>{{ f.district  }}</td>
+        <td>{{ f.treas_first_name  }}</td>
+        <td>{{ f.treas_last_name  }}</td>
+        <td>{{ f.address  }}</td>
+        <td>{{ f.city  }}</td>
+        <td>{{ f.state  }}</td>
+        <td>{{ f.zip }}</td>
+      </tr>
+      {% endfor %}
+
+    </table>
+    {% else %}
+      <p>Something went wrong.</p>
+    {% endif %}       
+{% endblock %}

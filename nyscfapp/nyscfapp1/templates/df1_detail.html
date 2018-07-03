@@ -1,0 +1,96 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{% load render_table from django_tables2 %}
+{% load bootstrap3 %}
+    <h1>Detail Filer View</h1>
+
+    <table summary="filers_detail">
+    	<tr><th>Context</th><th>Filer Details</th>
+		<tr><td>filer_id </td><td>{{ df1.filer_id  }}</td></tr>
+		<tr><td>filer_name </td><td>{{ df1.filer_name  }}</td></tr>
+		<tr><td>filer_type </td><td>{{ df1.filer_type  }}</td></tr>
+		<tr><td>status </td><td>{{ df1.status  }}</td></tr>
+		<tr><td>committee_type </td><td>{{ df1.committee_type  }}</td></tr>
+		<tr><td>office </td><td>{{ df1.office  }}</td></tr>
+		<tr><td>district </td><td>{{ df1.district  }}</td></tr>
+		<tr><td>treas_first_name </td><td>{{ df1.treas_first_name  }}</td></tr>
+		<tr><td>treas_last_name </td><td>{{ df1.treas_last_name  }}</td></tr>
+		<tr><td>address </td><td>{{ df1.address  }}</td></tr>
+		<tr><td>city </td><td>{{ df1.city  }}</td></tr>
+		<tr><td>state </td><td>{{ df1.state  }}</td></tr>
+		<tr><td>zip</td><td>{{ df1.zip }}</td></tr>
+
+    </table>
+    <br></br>
+    <h1>All Filer Contributions</h1>
+    <table>
+    <tr>
+    	<th>filer_id </th>
+		<th>freport_id </th>
+		<th>transaction_code </th>
+		<th>e_year </th>
+		<th>t3_trid </th>
+		<th>date1_10 </th>
+		<th>date2_12 </th>
+		<th>contrib_code_20 </th>
+		<th>contrib_type_code_25 </th>
+		<th>corp_30 </th>
+		<th>first_name_40 </th>
+		<th>mid_init_42 </th>
+		<th>last_name_44 </th>
+		<th>addr_1_50 </th>
+		<th>city_52 </th>
+		<th>state_54 </th>
+		<th>zip_56 </th>
+		<th>check_no_60 </th>
+		<th>check_date_62 </th>
+		<th>amount_70 </th>
+		<th>amount2_72 </th>
+		<th>description_80 </th>
+		<th>other_recpt_code_90 </th>
+		<th>purpose_code1_100 </th>
+		<th>purpose_code2_102 </th>
+		<th>explanation_110 </th>
+		<th>xfer_type_120 </th>
+		<th>chkbox_130 </th>
+		<th>crerec_uid </th>
+		<th>crerec_date </th>
+	</tr>
+    {% for c in df1.dc1_set.all %}
+	<tr>
+		<td>{{ c.filer_id  }}</td>
+		<td>{{ c.freport_id  }}</td>
+		<td>{{ c.transaction_code  }}</td>
+		<td>{{ c.e_year  }}</td>
+		<td>{{ c.t3_trid  }}</td>
+		<td>{{ c.date1_10  }}</td>
+		<td>{{ c.date2_12  }}</td>
+		<td>{{ c.contrib_code_20  }}</td>
+		<td>{{ c.contrib_type_code_25  }}</td>
+		<td>{{ c.corp_30  }}</td>
+		<td>{{ c.first_name_40  }}</td>
+		<td>{{ c.mid_init_42  }}</td>
+		<td>{{ c.last_name_44  }}</td>
+		<td>{{ c.addr_1_50  }}</td>
+		<td>{{ c.city_52  }}</td>
+		<td>{{ c.state_54  }}</td>
+		<td>{{ c.zip_56  }}</td>
+		<td>{{ c.check_no_60  }}</td>
+		<td>{{ c.check_date_62  }}</td>
+		<td>{{ c.amount_70  }}</td>
+		<td>{{ c.amount2_72  }}</td>
+		<td>{{ c.description_80  }}</td>
+		<td>{{ c.other_recpt_code_90  }}</td>
+		<td>{{ c.purpose_code1_100  }}</td>
+		<td>{{ c.purpose_code2_102  }}</td>
+		<td>{{ c.explanation_110  }}</td>
+		<td>{{ c.xfer_type_120  }}</td>
+		<td>{{ c.chkbox_130  }}</td>
+		<td>{{ c.crerec_uid  }}</td>
+		<td>{{ c.crerec_date  }}</td>
+    </tr>
+    {% endfor %}
+	</table>
+    
+{% endblock %}

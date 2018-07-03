@@ -1,0 +1,14 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>Campaign Finance Home</h1>
+
+  <p> This is a basic Django website developed for searching and visualization of New York State campaign finance data. All data is sourced from New York States election site. I do not personally guarantee the accuracy of this data, please see <a><href=https://www.elections.ny.gov/CFViewReports.html for details>https://www.elections.ny.gov/CFViewReports.html</a> for details on filing and data accuracy. This site has no affiliation with New York State or any political entity.</p>
+
+<h2>Basic Stats:</h2>
+
+  <ul>
+    <li><strong>Filer Count:</strong> {{ num_filers }}</li>
+  </ul>
+
+{% endblock %}
