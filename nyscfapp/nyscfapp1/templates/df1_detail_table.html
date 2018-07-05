@@ -1,31 +1,132 @@
 {% extends "base_generic.html" %}
 
+{% block plotly %}
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
+
+{% block page_header  %}
+<h1>Detail Filer View: {{df1.filer_name}}</h1>
+{% endblock %}
+
 {% block content %}
-
 {% load bootstrap3 %}
-<h1>Detail Filer View</h1>
 
-<table summary="filers_detail">
-	<tr><th>Context</th><th>Filer Details</th>
-	<tr><td>filer_id </td><td>{{ df1.filer_id  }}</td></tr>
-	<tr><td>filer_name </td><td>{{ df1.filer_name  }}</td></tr>
-	<tr><td>filer_type </td><td>{{ df1.filer_type  }}</td></tr>
-	<tr><td>status </td><td>{{ df1.status  }}</td></tr>
-	<tr><td>committee_type </td><td>{{ df1.committee_type  }}</td></tr>
-	<tr><td>office </td><td>{{ df1.office  }}</td></tr>
-	<tr><td>district </td><td>{{ df1.district  }}</td></tr>
-	<tr><td>treas_first_name </td><td>{{ df1.treas_first_name  }}</td></tr>
-	<tr><td>treas_last_name </td><td>{{ df1.treas_last_name  }}</td></tr>
-	<tr><td>address </td><td>{{ df1.address  }}</td></tr>
-	<tr><td>city </td><td>{{ df1.city  }}</td></tr>
-	<tr><td>state </td><td>{{ df1.state  }}</td></tr>
-	<tr><td>zip</td><td>{{ df1.zip }}</td></tr>
+<div style="width: 100%; display: table;">
+    <div style="display: table-row">
+    	<div id= "details" style="vertical-align: top; width: 25%; display: table-cell;">
+    		<h2>Summary:</h2>
+    	</div>
+    	<div style="vertical-align: top; display: table-cell;">
+    		<h2 style="vertical-align: top;">Plots:</h2>
+    	</div>
+    </div>
 
-</table>
+
+    <div style="display: table-row">
+        <div id= "details" style="vertical-align: top; width: 25%;height: 600px; display: table-cell;">
+          
+          <table summary="filers_detail">
+          	<tr><th>Context</th><th>Filer Details</th>
+        		<tr><td>filer_id </td><td>{{ df1.filer_id  }}</td></tr>
+        		<tr><td>filer_name </td><td>{{ df1.filer_name  }}</td></tr>
+        		<tr><td>filer_type </td><td>{{ df1.filer_type  }}</td></tr>
+        		<tr><td>status </td><td>{{ df1.status  }}</td></tr>
+        		<tr><td>committee_type </td><td>{{ df1.committee_type  }}</td></tr>
+        		<tr><td>office </td><td>{{ df1.office  }}</td></tr>
+        		<tr><td>district </td><td>{{ df1.district  }}</td></tr>
+        		<tr><td>treas_first_name </td><td>{{ df1.treas_first_name  }}</td></tr>
+        		<tr><td>treas_last_name </td><td>{{ df1.treas_last_name  }}</td></tr>
+        		<tr><td>address </td><td>{{ df1.address  }}</td></tr>
+        		<tr><td>city </td><td>{{ df1.city  }}</td></tr>
+        		<tr><td>state </td><td>{{ df1.state  }}</td></tr>
+        		<tr><td>zip</td><td>{{ df1.zip }}</td></tr>
+
+          </table>
+        </div>
+        
+        <div id= "articles" style="vertical-align: top; display: table-cell;">
+
+        </div>
+    </div>
+</div>
+
 <br></br>
+
 <h2>All Contributions Data For: {{df1.filer_name}}</h2>
 {% load export_url from django_tables2 %}
 <a href=" {% export_url "csv" %} ">Export to CSV</a>
+<div style="overflow:auto;">
 {% load render_table from django_tables2 %}
 {% render_table table 'django_tables2/bootstrap.html' %}
+</div>
+{% endblock %}
+
+
+{% block jquery %}
+//var endpoint = '/api/contbyfiler/data/'
+//var articleData = articleLabels = []
+
+$.ajax({
+    method: "GET",
+    success: function(data){
+        //articleLabels = ['NY', 'MA']
+        //articleData = [1000, 5000]
+        articleChart()
+        //transcriptChart()
+    // console.log(data)
+    },
+    error: function(error_data){
+        console.log("error")
+        console.log(error_data)
+    },
+})
+
+
+function articleChart(){
+	 var plotData = []
+	 var plotLabels = []
+	 {% for pLabel in plot_data.cont_by_state_labels %}
+	 plotLabels.push("{{pLabel}}");
+	 {% endfor %}
+	 {% for pData in plot_data.cont_by_state_data %}
+	 plotData.push({{pData}});
+	 {% endfor %}
+	 var dynamicZ = {{ plot_data.axis_state }}
+
+     var data = [{
+                  type: 'choropleth',
+                  locationmode: 'USA-states',
+                  locations: plotLabels,
+                  z: plotData,
+                  zmin: 0,
+                  zmax: dynamicZ,
+                  colorscale: [
+                    [0, 'rgb(242,240,247)'], [0.2, 'rgb(218,218,235)'],
+                    [0.4, 'rgb(188,189,220)'], [0.6, 'rgb(158,154,200)'],
+                    [0.8, 'rgb(117,107,177)'], [1, 'rgb(84,39,143)']
+                  ],
+                colorbar: {
+                  title: 'Contributions USD',
+                  thickness: 10
+                },
+                marker: {
+                  line:{
+                    color: 'rgb(255,255,255)',
+                    width: 2
+                  }
+                }
+              }];
+
+      var layout = {
+              title: 'Contributions by State Map',
+              geo:{
+                scope: 'usa',
+                showlakes: true,
+                lakecolor: 'rgb(255,255,255)'
+              }
+          };
+
+    Plotly.newPlot('articles', data, layout);
+}
+
 {% endblock %}

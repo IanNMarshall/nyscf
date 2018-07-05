@@ -60,6 +60,9 @@ class Df1(models.Model):
         managed = False
         db_table = 'DF1'
 
+    def __str__(self):              # __unicode__ on Python 2
+        return self.filer_id
+
 
 class Zip2Fips(models.Model):
     zip = models.CharField(db_column='ZIP', primary_key=True, max_length=5)  # Field name made lowercase.

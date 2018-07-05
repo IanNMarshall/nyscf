@@ -1,10 +1,16 @@
 {% extends "base_generic.html" %}
 
+{% block page_header  %}
+<h1>All Filers List</h1>
+{% endblock %}
+
+
 {% block content %}
+<h4> Filter by any number of filer columns... </h4>
 {% load render_table from django_tables2 %}
 {% load bootstrap3 %}
 
-<h1>All Filers List</h1>
+<div id="form_override">
 {% if filter %}
     <form action="" method="get" class="form form-inline">
         {% bootstrap_form filter.form  layout='inline'%}
@@ -12,8 +18,11 @@
 
     </form>
 {% endif %}
+</div>
 <br></br>
 {% load export_url from django_tables2 %}
 <a href=" {% export_url "csv" %} ">Export to CSV</a>
+<div style="overflow:auto;">
 {% render_table table 'django_tables2/bootstrap.html' %}
+</div>
 {% endblock %}

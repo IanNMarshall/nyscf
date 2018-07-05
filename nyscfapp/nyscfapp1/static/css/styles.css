@@ -18,19 +18,27 @@ th {
     color: white;
 }
 
-input { margin-bottom: 10px; 
-    width:25%;
+#form_override input { 
+    
 }
 
-.container {
-  width: 500px;
-  clear: both;
+
+#form_override .form-group {
+    width: 19%;
+}
+#form_override input { 
+    width: 100%;  
+}
+#form_override select { 
+    width: 100%; 
+}
+/* New way of prioritization */
+#bootstrap-overrides h1 { /* 100+1=101 priority score, yay! */
+  line-height: 1;
+  color: inherit;
 }
 
-.container input {
-  width: 25%%;
-  clear: both;
-}
+
 
 div.gallery {
     border: 1px solid #ccc;

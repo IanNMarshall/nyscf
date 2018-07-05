@@ -37,7 +37,7 @@ STATUS_CHOICES = [(s, s) for s in STATUS_LIST]
 
 class Df1Filter(django_filters.FilterSet):
     filer_name = django_filters.CharFilter(lookup_expr='icontains')
-    status = django_filters.MultipleChoiceFilter(choices=STATUS_CHOICES)
+    status = django_filters.ChoiceFilter(choices=STATUS_CHOICES)
     class Meta:
         model = Df1
         fields = [

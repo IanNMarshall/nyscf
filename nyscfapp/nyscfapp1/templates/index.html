@@ -1,16 +1,79 @@
-<!-- howdy/templates/index.html -->
 <!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>Howdy!</title>
-    </head>
-    <body>
-        <h1>Ian Marshall - Test django application</h1>
-     <a href="/about/">About Me</a>
-     <br></br>
-     <a href="/hank/">About Hank</a>
-     <br></br>
-     <a href="/nyscf_home/">NY State Campaign Finance</a>
-    </body>
+<html lang="en">
+<head>
+  
+  <title>Ian Marshall</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<!-- W3 Sidebar example -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<body>
+
+<div class="w3-sidebar w3-bar-block w3-card w3-animate-left" style="display:none" id="mySidebar">
+  <button class="w3-bar-item w3-button w3-button"
+  onclick="w3_close()">Close &times;</button>
+  <a href="{% url 'NYSCFHomeView' %}" class="w3-bar-item w3-button">Campaing Finance Home</a>
+  <a href="{% url 'hank' %}" class="w3-bar-item w3-button">Hank</a>
+</div>
+
+<div id="main">
+
+<div class="w3-green">
+  <button id="openNav" class="w3-button w3-teal w3-xlarge" onclick="w3_open()">&#9776;</button>
+  <div class="w3-container">
+    <h1>Ian Marshall</h1>
+  </div>
+</div>
+
+<script>
+function w3_open() {
+  document.getElementById("main").style.marginLeft = "15%";
+  document.getElementById("mySidebar").style.width = "15%";
+  document.getElementById("mySidebar").style.display = "block";
+  document.getElementById("openNav").style.display = 'none';
+}
+function w3_close() {
+  document.getElementById("main").style.marginLeft = "0%";
+  document.getElementById("mySidebar").style.display = "none";
+  document.getElementById("openNav").style.display = "inline-block";
+}
+</script>
+
+
+
+
+  <div class="container-fluid" >
+    <h2> About </h2>
+      <p> I am an engineer / computer scientist currently working at GLOBALFOUNDRIES in upstate NY, graduate of Rensselaer Polytechnic Institute – Class of 2016 with a B.S. in Electrical and Computer Systems Engineering. </p>
+    <h2> Projects </h2>
+      <a href="{% url 'NYSCFHomeView' %}" >NY State Campaign Finance Search and Data Visualizations</a>
+      <p>
+        <ul>
+        <li>Abstract:</li>
+        <ul>
+            <li>New York State provides campaign contribution filings for all candidates dating back to 1999. The goal of this project is to make that data easily searchable and fascilitate the visualization of trends/patterns.</li>
+        </ul>
+            <li>Technologies Used:</li>
+            <ul>
+                <li>Website: Python/Django</li>
+                <li>Database: MySQL on AWS RDS Instance</li>
+                <li>Hosting: AWS ElasticBeanstalk</li>
+            </ul>
+        </ul>
+
+      </p>
+    <h2> Links </h2>
+      <ul>
+        <li><a href="/media/Ian Marshall Resume.pdf">Resume</a></li>
+        <li><a href="https://www.linkedin.com/in/ian-marshall-a82b78ab/" >LinkedIn</a></li>
+        <li><a href="https://github.com/IanNMarshall/" >GitHub</a></li>
+    </ul>
+  </div>
+    
+</body>
 </html>

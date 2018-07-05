@@ -1,4 +1,5 @@
  # howdy/views.py
+import math
 from django.shortcuts import render
 from django.views import generic
 from django_filters.views import FilterView
@@ -30,12 +31,13 @@ class HankPageView(TemplateView):
 class NYSCFHomeView(TemplateView):
     #template_name = "nyscf_home.html"
     num_filers = Df1.objects.all().count()
+    num_conts = Dc1.objects.all().count()
     def get(self, request, **kwargs):
 
         return render(
-        	request, 
-        	'nyscf_home.html', 
-        	context={'num_filers':self.num_filers})
+            request, 
+            'nyscf_home.html', 
+            context={'num_filers':self.num_filers, 'num_conts':self.num_conts})
 
 
 class NYSCFFilerView(generic.ListView):
@@ -50,30 +52,30 @@ class NYSCFFilerFilterView(SingleTableMixin, FilterView):
     #template_name = 'df1_filter.html'
     #filterset_class = Df1Filter
     #table = Df1Table(Df1.objects.all())
-	def get(self, request, **kwargs):
-		table = Df1Table(Df1.objects.all())
-		RequestConfig(
-			request, 
-			paginate={'per_page': 25}).configure(table)
-		return render(
-			request, 
-			'df1_filter.html', 
-			{'filers': table})
+    def get(self, request, **kwargs):
+        table = Df1Table(Df1.objects.all())
+        RequestConfig(
+            request, 
+            paginate={'per_page': 25}).configure(table)
+        return render(
+            request, 
+            'df1_filter.html', 
+            {'filers': table})
 """
 """
 #single table view
 class NYSCFFilerFilterView(SingleTableMixin, FilterView):
-	model = Df1
-	table_class = Df1Table
-	template_name = 'df1_filter.html'
+    model = Df1
+    table_class = Df1Table
+    template_name = 'df1_filter.html'
     filterset_class = Df1Filter
 
 """ #filter
 class NYSCFFilerFilterView(ExportMixin, SingleTableMixin, FilterView):
-	model = Df1
-	table_class = Df1Table
-	template_name = 'df1_filter.html'
-	filterset_class = Df1Filter
+    model = Df1
+    table_class = Df1Table
+    template_name = 'df1_filter.html'
+    filterset_class = Df1Filter
 
 
 class NYSCFContributionFilterView(ExportMixin, SingleTableMixin, FilterView):
@@ -82,7 +84,7 @@ class NYSCFContributionFilterView(ExportMixin, SingleTableMixin, FilterView):
     template_name = 'dc1_filter.html'
     filterset_class = Dc1Filter
 
-	#def get(self, request, **kwargs):
+    #def get(self, request, **kwargs):
         #return render(request)
 
 class NYSCFFilerDetail2View(generic.DetailView):
@@ -182,6 +184,9 @@ class NYSCFFilerDetail2View(generic.DetailView):
 
 
 class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
+    """
+    Main Detail View of Filer - accessed by direct url ~/f
+    """
     template_name = "df1_detail_table.html"
     model = Df1
     slug_field = 'filer_id'
@@ -227,6 +232,78 @@ class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
         #self.table_data = queryset.filter(pk=pk)
         self.table_data = Dc1.objects.filter(filer_id=slug)
         return obj
+
+    def get_plot_data(self, **kwargs):
+
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
+        cont_by_year = dict()
+        cont_by_state = dict()
+        cont_by_zip = dict()        
+        cont_by_fips = dict() 
+        for row in cData:
+            #Year
+            if row['e_year'] in cont_by_year.keys():
+                cont_by_year[row['e_year']] = cont_by_year[row['e_year']]  + row['amount_70']
+            else:
+                cont_by_year[row['e_year']] = row['amount_70']
+            #State
+            if row['state_54'] in cont_by_state.keys():
+                cont_by_state[row['state_54']] = cont_by_state[row['state_54']]  + row['amount_70']
+            else:
+                cont_by_state[row['state_54']] = row['amount_70']
+            #Zips
+            if row['zip_56'] in cont_by_zip.keys():
+                cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
+            else:
+                cont_by_zip[row['zip_56']] = row['amount_70']
+            #FIPS
+            #row_fips = 
+            #if row['zip_56'] in cont_by_zip.keys():
+                #cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
+            #else:
+                #cont_by_zip[row['zip_56']] = row['amount_70']
+        
+
+        cont_by_year = sorted(cont_by_year.items(), key=lambda x: x[1])
+        cont_by_year = dict(cont_by_year)
+        cont_by_state = sorted(cont_by_state.items(), key=lambda x: x[1])
+        axis_state = 10000.0 #dynamically scale axis rnd to 10k, or 10k if no results
+        if len(cont_by_state) > 0:
+            axis_state = math.ceil(float(cont_by_state[-1][1]) / 
+                10000.0)*10000.0
+        cont_by_state = dict(cont_by_state)
+        cont_by_zip = sorted(cont_by_zip.items(), key=lambda x: x[1])
+        cont_by_zip = dict(cont_by_zip)
+        cont_by_fips = sorted(cont_by_fips.items(), key=lambda x: x[1])
+        cont_by_fips = dict(cont_by_fips)
+        
+        plot_data = {
+            "cont_by_year_labels": cont_by_year.keys(),
+            'cont_by_year_data': cont_by_year.values(),
+            "cont_by_state_labels": cont_by_state.keys(),
+            'cont_by_state_data': cont_by_state.values(),
+            "cont_by_zip_labels": cont_by_zip.keys(),
+            'cont_by_zip_data': cont_by_zip.values(),
+            "cont_by_fips_labels": cont_by_fips.keys(),
+            'cont_by_fips_data': cont_by_fips.values(),
+            "axis_state": axis_state,
+
+        }
+        return plot_data
+        #plot_data = {"NY": 10000, "MA": 5001}
+        #return plot_data
+        #return str(plot_data).strip('"').replace("'", '"')
+        #return "abcd"
+
+    #override context data to pass additional info
+    def get_context_data(self, **kwargs):
+        context = super(NYSCFFilerDetailView, self).get_context_data(**kwargs)
+        #cart_product_form = CartAddProductForm()
+        plot_data = self.get_plot_data(**kwargs)
+        context['plot_data'] = plot_data
+        return context
+
 
 
 #plotly stuff
@@ -352,5 +429,3 @@ def dex(request):
 
 def detail(request, filer_id):
     return HttpResponse("You're looking at filer %s." % filer_id)
-
-    
