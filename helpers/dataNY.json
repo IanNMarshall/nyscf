@@ -1,0 +1,1 @@
+{"layout": {"dragmode": "select", "yaxis": {"zeroline": false, "fixedrange": true, "range": [40, 46], "showgrid": false, "autorange": false}, "width": 800, "hovermode": "closest", "margin": {"t": 20, "l": 20, "b": 20, "r": 20}, "xaxis": {"zeroline": false, "fixedrange": true, "range": [-82, -72], "showgrid": false, "autorange": false}, "height": 600}, "data": [{"x": 
