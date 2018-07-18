@@ -1,5 +1,8 @@
  # howdy/views.py
 import math
+import geopandas as gp
+import pandas as pd
+from .helpers import county_plot as cp
 from django.shortcuts import render
 from django.views import generic
 from django_filters.views import FilterView
@@ -7,13 +10,16 @@ from django_tables2.views import SingleTableView, SingleTableMixin, RequestConfi
 from django.views.generic import TemplateView
 from django.http import HttpResponse
 from .models import Df1, Dc1, Zip2Fips
+from django.db.models import Sum
 from .filters import Df1Filter, Dc1Filter
 from .tables import Df1Table, Dc1Table
 from django_tables2.export.views import ExportMixin
 #for plotly views
 from rest_framework.views import APIView
 from rest_framework.response import Response
-
+import sys, os
+from nyscfapp.settings import BASE_DIR
+#file_path = os.path.join(BASE_DIR, '/nyscfapp1/helpers/')
 # Create your views here.
 class HomePageView(TemplateView):
     def get(self, request, **kwargs):
@@ -92,71 +98,85 @@ class NYSCFFilerDetail2View(generic.DetailView):
     model = Df1
     slug_field = 'filer_id'
     #plot_data = ["Hello Hank!"]
-
-    def get_plot_data(self, **kwargs):
-
-        slug = self.kwargs.get(self.slug_url_kwarg)
-        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
-        cont_by_year = dict()
-        cont_by_state = dict()
-        cont_by_zip = dict()        
-        cont_by_fips = dict() 
-        for row in cData:
-            #Year
-            if row['e_year'] in cont_by_year.keys():
-                cont_by_year[row['e_year']] = cont_by_year[row['e_year']]  + row['amount_70']
-            else:
-                cont_by_year[row['e_year']] = row['amount_70']
-            #State
-            if row['state_54'] in cont_by_state.keys():
-                cont_by_state[row['state_54']] = cont_by_state[row['state_54']]  + row['amount_70']
-            else:
-                cont_by_state[row['state_54']] = row['amount_70']
-            #Zips
-            if row['zip_56'] in cont_by_zip.keys():
-                cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
-            else:
-                cont_by_zip[row['zip_56']] = row['amount_70']
-            #FIPS
-            #row_fips = 
-            #if row['zip_56'] in cont_by_zip.keys():
-                #cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
-            #else:
-                #cont_by_zip[row['zip_56']] = row['amount_70']
+    def get_county_plot_data(self, **kwargs):
+        df = cp.read_county_shp()
         
-
-        cont_by_year = sorted(cont_by_year.items(), key=lambda x: x[1])
-        cont_by_year = dict(cont_by_year)
-        cont_by_state = sorted(cont_by_state.items(), key=lambda x: x[1])
-        cont_by_state = dict(cont_by_state)
-        cont_by_zip = sorted(cont_by_zip.items(), key=lambda x: x[1])
-        cont_by_zip = dict(cont_by_zip)
-        cont_by_fips = sorted(cont_by_fips.items(), key=lambda x: x[1])
-        cont_by_fips = dict(cont_by_fips)
-
+        
+        df3 = cp.merge_dfs(df, 1)
+        fig = cp.set_plot_data(df3)
+        plot_div = cp.get_div(fig)
         plot_data = {
-            "cont_by_year_labels": cont_by_year.keys(),
-            'cont_by_year_data': cont_by_year.values(),
-            "cont_by_state_labels": cont_by_state.keys(),
-            'cont_by_state_data': cont_by_state.values(),
-            "cont_by_zip_labels": cont_by_zip.keys(),
-            'cont_by_zip_data': cont_by_zip.values(),
-            "cont_by_fips_labels": cont_by_fips.keys(),
-            'cont_by_fips_data': cont_by_fips.values(),
+            "plot_div": plot_div,
 
         }
         return plot_data
-        #plot_data = {"NY": 10000, "MA": 5001}
-        #return plot_data
-        #return str(plot_data).strip('"').replace("'", '"')
-        #return "abcd"
+
+
+    def get_plot_data(self, **kwargs):
+        #initial filter - 
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
+
+        #years
+        years2 = cData.values('e_year').annotate(Sum('amount_70'))
+        years2 = sorted(years2, key=lambda x: x['amount_70__sum'])
+        years2labels = [ row['e_year'] for row in years2 ]
+        years2data = [ row['amount_70__sum'] for row in years2 ]
+        #state 'state_54'
+        state2 = cData.values('state_54').annotate(Sum('amount_70'))
+        state2 = sorted(state2, key=lambda x: x['amount_70__sum'])
+        state2labels = [ row['state_54'] for row in state2 ]
+        state2data = [ row['amount_70__sum'] for row in state2 ]
+        axis_state = 10000.0 #dynamically scale axis rnd to 10k, or 10k if no results
+        if len(state2data) > 0:
+            axis_state = math.ceil(float(state2data[-1]) / 
+                10000.0)*10000.0
+        #state 'zip_56'
+        zip2 = cData.values('zip_56').annotate(Sum('amount_70'))
+        zip2 = sorted(zip2, key=lambda x: x['amount_70__sum'])
+        zip2labels = [ row['zip_56'] for row in zip2 ]
+        zip2data = [ row['amount_70__sum'] for row in zip2 ]
+        #fips lookup double underscore off of FK notation
+        fips2 = cData.values('zip_56__fips').annotate(Sum('amount_70'))
+        fips2 = sorted(fips2, key=lambda x: x['amount_70__sum'])
+        fips2labels = [ row['zip_56__fips'] for row in fips2 ]
+        fips2data = [ row['amount_70__sum'] for row in fips2 ]
+
+        #convert to data frame to pass into county plot func.
+        fips2df = {"FIPS": fips2labels, "AMT": fips2data}
+        df_fips = pd.DataFrame.from_dict(fips2df)
+
+        #external function calls for plot data generation
+        df = cp.read_county_shp()
+        df3 = cp.merge_dfs(df, df_fips)
+        fig = cp.set_plot_data(df3)
+        cont_by_county_plot_div = cp.get_div(fig)
+        #test2 = Dc1.objects.filter(filer_id='C01217').values_list('zip_56', 'zip_56__fips')
+        plot_data = {
+            "cont_by_year_labels": years2labels,
+            'cont_by_year_data': years2data,
+            "cont_by_state_labels": state2labels,
+            'cont_by_state_data': state2data,
+            "cont_by_zip_labels": zip2labels,
+            'cont_by_zip_data': zip2data,
+            "cont_by_fips_labels": fips2labels,
+            'cont_by_fips_data': fips2data,
+            "cont_by_county_plot_div" : cont_by_county_plot_div,
+            "axis_state": axis_state,
+
+        }
+
+        return plot_data
+
 
     #override context data to pass additional info
     def get_context_data(self, **kwargs):
         context = super(NYSCFFilerDetail2View, self).get_context_data(**kwargs)
         #cart_product_form = CartAddProductForm()
         plot_data = self.get_plot_data(**kwargs)
+        #county_plot_data = self.get_county_plot_data(**kwargs)
         context['plot_data'] = plot_data
+        #context['county_plot_data'] = county_plot_data
         return context
 
 
@@ -233,68 +253,77 @@ class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
         self.table_data = Dc1.objects.filter(filer_id=slug)
         return obj
 
-    def get_plot_data(self, **kwargs):
-
-        slug = self.kwargs.get(self.slug_url_kwarg)
-        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
-        cont_by_year = dict()
-        cont_by_state = dict()
-        cont_by_zip = dict()        
-        cont_by_fips = dict() 
-        for row in cData:
-            #Year
-            if row['e_year'] in cont_by_year.keys():
-                cont_by_year[row['e_year']] = cont_by_year[row['e_year']]  + row['amount_70']
-            else:
-                cont_by_year[row['e_year']] = row['amount_70']
-            #State
-            if row['state_54'] in cont_by_state.keys():
-                cont_by_state[row['state_54']] = cont_by_state[row['state_54']]  + row['amount_70']
-            else:
-                cont_by_state[row['state_54']] = row['amount_70']
-            #Zips
-            if row['zip_56'] in cont_by_zip.keys():
-                cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
-            else:
-                cont_by_zip[row['zip_56']] = row['amount_70']
-            #FIPS
-            #row_fips = 
-            #if row['zip_56'] in cont_by_zip.keys():
-                #cont_by_zip[row['zip_56']] = cont_by_zip[row['zip_56']]  + row['amount_70']
-            #else:
-                #cont_by_zip[row['zip_56']] = row['amount_70']
+    def get_county_plot_data(self, **kwargs):
+        df = cp.read_county_shp()
         
-
-        cont_by_year = sorted(cont_by_year.items(), key=lambda x: x[1])
-        cont_by_year = dict(cont_by_year)
-        cont_by_state = sorted(cont_by_state.items(), key=lambda x: x[1])
-        axis_state = 10000.0 #dynamically scale axis rnd to 10k, or 10k if no results
-        if len(cont_by_state) > 0:
-            axis_state = math.ceil(float(cont_by_state[-1][1]) / 
-                10000.0)*10000.0
-        cont_by_state = dict(cont_by_state)
-        cont_by_zip = sorted(cont_by_zip.items(), key=lambda x: x[1])
-        cont_by_zip = dict(cont_by_zip)
-        cont_by_fips = sorted(cont_by_fips.items(), key=lambda x: x[1])
-        cont_by_fips = dict(cont_by_fips)
         
+        df3 = cp.merge_dfs(df, 1)
+        fig = cp.set_plot_data(df3)
+        plot_div = cp.get_div(fig)
         plot_data = {
-            "cont_by_year_labels": cont_by_year.keys(),
-            'cont_by_year_data': cont_by_year.values(),
-            "cont_by_state_labels": cont_by_state.keys(),
-            'cont_by_state_data': cont_by_state.values(),
-            "cont_by_zip_labels": cont_by_zip.keys(),
-            'cont_by_zip_data': cont_by_zip.values(),
-            "cont_by_fips_labels": cont_by_fips.keys(),
-            'cont_by_fips_data': cont_by_fips.values(),
-            "axis_state": axis_state,
+            "plot_div": plot_div,
 
         }
         return plot_data
-        #plot_data = {"NY": 10000, "MA": 5001}
-        #return plot_data
-        #return str(plot_data).strip('"').replace("'", '"')
-        #return "abcd"
+
+
+    def get_plot_data(self, **kwargs):
+        #initial filter - 
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
+
+        #years
+        years2 = cData.values('e_year').annotate(Sum('amount_70'))
+        years2 = sorted(years2, key=lambda x: x['amount_70__sum'])
+        years2labels = [ row['e_year'] for row in years2 ]
+        years2data = [ row['amount_70__sum'] for row in years2 ]
+        #state 'state_54'
+        state2 = cData.values('state_54').annotate(Sum('amount_70'))
+        state2 = sorted(state2, key=lambda x: x['amount_70__sum'])
+        state2labels = [ row['state_54'] for row in state2 ]
+        state2data = [ row['amount_70__sum'] for row in state2 ]
+        axis_state = 10000.0 #dynamically scale axis rnd to 10k, or 10k if no results
+        if len(state2data) > 0:
+            axis_state = math.ceil(float(state2data[-1]) / 
+                10000.0)*10000.0
+        #state 'zip_56'
+        zip2 = cData.values('zip_56').annotate(Sum('amount_70'))
+        zip2 = sorted(zip2, key=lambda x: x['amount_70__sum'])
+        zip2labels = [ row['zip_56'] for row in zip2 ]
+        zip2data = [ row['amount_70__sum'] for row in zip2 ]
+        #fips lookup double underscore off of FK notation
+        fips2 = cData.values('zip_56__fips').annotate(Sum('amount_70'))
+        fips2 = sorted(fips2, key=lambda x: x['amount_70__sum'])
+        fips2labels = [ row['zip_56__fips'] for row in fips2 ]
+        fips2data = [ row['amount_70__sum'] for row in fips2 ]
+
+        #convert to data frame to pass into county plot func.
+        fips2df = {"FIPS": fips2labels, "AMT": fips2data}
+        df_fips = pd.DataFrame.from_dict(fips2df)
+
+        df1_FIPS = Df1.objects.filter(filer_id=slug).values_list('zip__fips', flat=True)[0]
+        #print(df1_FIPS)
+        #external function calls for plot data generation
+        df = cp.read_county_shp()
+        df3 = cp.merge_dfs(df, df_fips)
+        fig = cp.set_plot_data(df3, df1_FIPS)
+        cont_by_county_plot_div = cp.get_div(fig)
+        #test2 = Dc1.objects.filter(filer_id='C01217').values_list('zip_56', 'zip_56__fips')
+        plot_data = {
+            "cont_by_year_labels": years2labels,
+            'cont_by_year_data': years2data,
+            "cont_by_state_labels": state2labels,
+            'cont_by_state_data': state2data,
+            "cont_by_zip_labels": zip2labels,
+            'cont_by_zip_data': zip2data,
+            "cont_by_fips_labels": fips2labels,
+            'cont_by_fips_data': fips2data,
+            "cont_by_county_plot_div" : cont_by_county_plot_div,
+            "axis_state": axis_state,
+
+        }
+
+        return plot_data
 
     #override context data to pass additional info
     def get_context_data(self, **kwargs):
@@ -373,6 +402,13 @@ class ContByFilerAPIData(APIView):
                     cont_by_fips["?????"] = row['amount_70']
 
         
+        fips2 = Dc1.objects.filter(filer_id='C01217').values('zip_56__fips').annotate(Sum('amount_70'))
+        fips2 = sorted(fips2, key=lambda x: x['amount_70__sum'])
+        fips2labels = [ f['zip_56__fips'] for f in fips2 ]
+        fips2data = [ f['amount_70__sum'] for f in fips2 ]
+
+
+        
 
         cont_by_year = sorted(cont_by_year.items(), key=lambda x: x[1])
         cont_by_year = dict(cont_by_year)
@@ -392,6 +428,8 @@ class ContByFilerAPIData(APIView):
             'cont_by_zip_data': cont_by_zip.values(),
             "cont_by_fips_labels": cont_by_fips.keys(),
             'cont_by_fips_data': cont_by_fips.values(),
+            "fips2labels": fips2labels,
+            "fips2data": fips2data
 
         }
 

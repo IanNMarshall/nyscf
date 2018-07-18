@@ -18,6 +18,28 @@
     	</div>
     	<div style="vertical-align: top; display: table-cell;">
     		<h2 style="vertical-align: top;">Plots:</h2>
+        <!--<p>Click on the buttons inside the tabbed menu:</p>
+
+        <div class="tab">
+          <button class="tablinks" onclick="openCity(event, 'London')">London</button>
+          <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
+          <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
+        </div>
+
+        <div id="London" class="tabcontent">
+          <h3>London</h3>
+          <p>London is the capital city of England.</p>
+        </div>
+
+        <div id="Paris" class="tabcontent">
+          <h3>Paris</h3>
+          <p>Paris is the capital of France.</p> 
+        </div>
+
+        <div id="Tokyo" class="tabcontent">
+          <h3>Tokyo</h3>
+          <p>Tokyo is the capital of Japan.</p>
+        </div>-->
     	</div>
     </div>
 
@@ -43,10 +65,35 @@
 
           </table>
         </div>
-        
-        <div id= "articles" style="vertical-align: top; display: table-cell;">
+        <div style="display: table-cell; vertical-align: top;"> 
+        <div class="tab" >
+          
+          <button class="tablinks" onclick="openPlot(event, 'cont_by_county_map')">Conts by County</button>
+          <button class="tablinks" onclick="openPlot(event, 'cont_by_state_map')">Conts by State</button>
+          <button class="tablinks" onclick="openPlot(event, 'cont_by_year_bar')">Conts by Year</button>
+        </div>
+
+        <div id="cont_by_county_map" class="tabcontent">
+          <div>{{ plot_data.cont_by_county_plot_div|safe }}</div>
+        </div>
+
+        <div id="cont_by_state_map" class="tabcontent">
+          <!--<div id= "cont_by_state_map" style="vertical-align: top;"></div>-->
+          <!--<p>My wife used to be a size 2</p>-->
+          <div id="cont_by_state_plot"></div>
 
         </div>
+
+        
+
+        <div id="cont_by_year_bar" class="tabcontent">
+          <h3>cont_by_year_bar</h3>
+          <p>Coming Soon.</p>
+        </div>
+      </div>
+    </div>
+        <!-- <div id= "cont_by_state_map" style="vertical-align: top;">
+        </div> -->
     </div>
 </div>
 
@@ -59,6 +106,47 @@
 {% load render_table from django_tables2 %}
 {% render_table table 'django_tables2/bootstrap.html' %}
 </div>
+<!--<script>
+function openCity(evt, cityName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+</script>-->
+<script>
+function openPlot(evt, plotName) {
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    document.getElementById(plotName).style.display = "block";
+    evt.currentTarget.className += " active";
+}
+</script>
+
+
+
+
+
+
+
+
+
+
+
 {% endblock %}
 
 
@@ -126,7 +214,7 @@ function articleChart(){
               }
           };
 
-    Plotly.newPlot('articles', data, layout);
+    Plotly.newPlot('cont_by_state_plot', data, layout);
 }
 
 {% endblock %}

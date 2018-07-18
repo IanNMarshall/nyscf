@@ -1,5 +1,7 @@
 {% extends "base_generic.html" %}
-
+{% block plotly %}
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+{% endblock %}
 {% block content %}
 {% load render_table from django_tables2 %}
 {% load bootstrap3 %}
@@ -69,9 +71,13 @@
   </tr>
   </table>
   <textarea>
-    {{ plot_data }}
+    {{ plot_data.cont_by_fips_labels }}
+    {{plot_data.cont_by_fips_data}}
 
   </textarea>
+  <div>
+    {{ plot_data.cont_by_county_plot_div|safe }}
+  </div>
 
 {% endblock %}
 
@@ -79,7 +85,7 @@
 //var endpoint = '/api/contbyfiler/data/'
 //var articleData = articleLabels = []
 
-$.ajax({
+<!-- $.ajax({
     method: "GET",
     success: function(data){
         //articleLabels = ['NY', 'MA']
@@ -137,8 +143,37 @@ function articleChart(){
                 lakecolor: 'rgb(255,255,255)'
               }
           };
+      var data2 = {{county_plot_data.fig.data|safe}}
+      var layout_ny = {
+            hovermode: 'closest',
+            xaxis: {
+                autorange: false,
+                range: [-82, -72], 
+                showgrid: false,
+                zeroline: false,
+                fixedrange: true
+            },
+            yaxis: {
+                autorange: false,
+                range: [40, 46], 
+                showgrid: false,
+                zeroline: false,
+                fixedrange: true
+            },
+            margin: {
+                t: 20,
+                b: 20,
+                r: 20,
+                l: 20
+            },
+            width: 800,
+            height: 600,
+            dragmode: 'select'
+      };
 
-    Plotly.newPlot('articles', data, layout);
-}
+
+    Plotly.newPlot('articles', data, layout_ny);
+} -->
+
 
 {% endblock %}

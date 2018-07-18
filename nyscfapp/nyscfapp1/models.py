@@ -5,7 +5,7 @@ photo = models.ImageField(upload_to="gallery")
 
 class Dc1(models.Model):
     id = models.IntegerField(db_column='id', primary_key=True)  # Field name made lowercase.
-    filer_id = models.ForeignKey('Df1', models.DO_NOTHING, db_column='FILER_ID', blank=True, null=True)  # Field name made lowercase.
+    filer_id = models.ForeignKey('Df1', models.DO_NOTHING, db_column='FILER_ID', related_name='dc1_set', blank=True, null=True)  # Field name made lowercase.
     freport_id = models.CharField(db_column='FREPORT_ID', max_length=1, blank=True, null=True)  # Field name made lowercase.
     transaction_code = models.CharField(db_column='TRANSACTION_CODE', max_length=1, blank=True, null=True)  # Field name made lowercase.
     e_year = models.IntegerField(db_column='E_YEAR', blank=True, null=True)  # Field name made lowercase.
@@ -21,7 +21,9 @@ class Dc1(models.Model):
     addr_1_50 = models.CharField(db_column='ADDR_1_50', max_length=128, blank=True, null=True)  # Field name made lowercase.
     city_52 = models.CharField(db_column='CITY_52', max_length=32, blank=True, null=True)  # Field name made lowercase.
     state_54 = models.CharField(db_column='STATE_54', max_length=2, blank=True, null=True)  # Field name made lowercase.
-    zip_56 = models.CharField(db_column='ZIP_56', max_length=10, blank=True, null=True)  # Field name made lowercase.
+    #zip_56 = models.CharField(db_column='ZIP_56', max_length=10, blank=True, null=True)  # Field name made lowercase.
+    #zip_56 = models.ForeignKey('Zip2Fips', models.DO_NOTHING, db_column='ZIP_56', blank=True, null=True)
+    zip_56 = models.ForeignKey('Zip2Fips', models.DO_NOTHING, related_name='zip_dc1_set', db_column='ZIP_56', blank=True, null=True)
     check_no_60 = models.CharField(db_column='CHECK_NO_60', max_length=10, blank=True, null=True)  # Field name made lowercase.
     check_date_62 = models.CharField(db_column='CHECK_DATE_62', max_length=12, blank=True, null=True)  # Field name made lowercase.
     amount_70 = models.DecimalField(db_column='AMOUNT_70', max_digits=15, decimal_places=2, blank=True, null=True)  # Field name made lowercase.
@@ -54,7 +56,8 @@ class Df1(models.Model):
     address = models.CharField(db_column='ADDRESS', max_length=64, blank=True, null=True)  # Field name made lowercase.
     city = models.CharField(db_column='CITY', max_length=32, blank=True, null=True)  # Field name made lowercase.
     state = models.CharField(db_column='STATE', max_length=2, blank=True, null=True)  # Field name made lowercase.
-    zip = models.CharField(db_column='ZIP', max_length=10, blank=True, null=True)  # Field name made lowercase.
+    #zip = models.CharField(db_column='ZIP', max_length=10, blank=True, null=True)  # Field name made lowercase.
+    zip = models.ForeignKey('Zip2Fips', models.DO_NOTHING, related_name='zip_df1_set', db_column='ZIP', blank=True, null=True)
 
     class Meta:
         managed = False
@@ -67,6 +70,7 @@ class Df1(models.Model):
 class Zip2Fips(models.Model):
     zip = models.CharField(db_column='ZIP', primary_key=True, max_length=5)  # Field name made lowercase.
     fips = models.CharField(db_column='FIPS', max_length=5, blank=True, null=True)  # Field name made lowercase.
+    #filer_id = models.ForeignKey('Df1', models.DO_NOTHING, db_column='FILER_ID', blank=True, null=True)  # Field name made lowercase.
 
     class Meta:
         managed = False
