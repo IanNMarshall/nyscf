@@ -5,7 +5,7 @@ import pandas as pd
 from .helpers import county_plot as cp
 from django.shortcuts import render
 from django.views import generic
-from django_filters.views import FilterView
+from django_filters.views import FilterView, FilterMixin
 from django_tables2.views import SingleTableView, SingleTableMixin, RequestConfig
 from django.views.generic import TemplateView
 from django.http import HttpResponse
@@ -46,9 +46,11 @@ class NYSCFHomeView(TemplateView):
             context={'num_filers':self.num_filers, 'num_conts':self.num_conts})
 
 
-class NYSCFFilerView(generic.ListView):
-    #template_name = "nyscf_home.html"
+class NYSCFFilerView(FilterView): #FilterMixin, generic.ListView):
+    template_name = "df1_list.html"
     model = Df1
+    filterset_class = Dc1Filter
+    #queryset
     #num_filers = Df1.objects.all().count()
 """
 class NYSCFFilerFilterView(SingleTableMixin, FilterView):
@@ -177,6 +179,7 @@ class NYSCFFilerDetail2View(generic.DetailView):
         #county_plot_data = self.get_county_plot_data(**kwargs)
         context['plot_data'] = plot_data
         #context['county_plot_data'] = county_plot_data
+        print(context['df1'])
         return context
 
 
@@ -203,75 +206,35 @@ class NYSCFFilerDetail2View(generic.DetailView):
 #     table_class = Dc1Table
 
 
-class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
+class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, FilterView): #generic.DetailView): generic.detail.SingleObjectMixin,
     """
-    Main Detail View of Filer - accessed by direct url ~/f
+    Main Detail View of Filer - accessed by direct url 
     """
     template_name = "df1_detail_table.html"
-    model = Df1
+    slug_url_kwarg = 'slug'
+    #model = Dc1
     slug_field = 'filer_id'
+    filterset_class = Dc1Filter
     table_class = Dc1Table #different model for table_class
-    table_data = [] #inintialize table_data, will be set by get_obj
+    #queryset = Dc1.objects.filter(filer_id='A00162')
+    master_qs = None
 
-    def get_object(self, queryset=None):
-        """
-        Overriding get_object from DetailView as to update table_data
-        Return the object the view is displaying.
-        Require `self.queryset` and a `pk` or `slug` argument in the URLconf.
-        Subclasses can override this to return any object.
-        """
-        # Use a custom queryset if provided; this is required for subclasses
-        # like DateDetailView
-        if queryset is None:
-            queryset = self.get_queryset()
-
-        # Next, try looking up by primary key.
-        pk = self.kwargs.get(self.pk_url_kwarg)
-        slug = self.kwargs.get(self.slug_url_kwarg)
-        if pk is not None:
-            queryset = queryset.filter(pk=pk)
-
-        # Next, try looking up by slug.
-        if slug is not None and (pk is None or self.query_pk_and_slug):
-            slug_field = self.get_slug_field()
-            queryset = queryset.filter(**{slug_field: slug})
-
-        # If none of those are defined, it's an error.
-        if pk is None and slug is None:
-            raise AttributeError(
-                "Generic detail view %s must be called with either an object "
-                "pk or a slug in the URLconf." % self.__class__.__name__
-            )
-
-        try:
-            # Get the single item from the filtered queryset
-            obj = queryset.get()
-        except queryset.model.DoesNotExist:
-            raise Http404(_("No %(verbose_name)s found matching the query") %
-                          {'verbose_name': queryset.model._meta.verbose_name})
-        #self.table_data = queryset.filter(pk=pk)
-        self.table_data = Dc1.objects.filter(filer_id=slug)
-        return obj
-
-    def get_county_plot_data(self, **kwargs):
-        df = cp.read_county_shp()
-        
-        
-        df3 = cp.merge_dfs(df, 1)
-        fig = cp.set_plot_data(df3)
-        plot_div = cp.get_div(fig)
-        plot_data = {
-            "plot_div": plot_div,
-
-        }
-        return plot_data
+    test2 = "hello"
 
 
     def get_plot_data(self, **kwargs):
+
+        """
+        Format Data into nice dicts
+        Call external helper functions to pull in GIS data
+        Merge table data with GIS data
+        Plotly offline plot -> div 
+        Returns: entire div object to be embedded)
+        """
         #initial filter - 
         slug = self.kwargs.get(self.slug_url_kwarg)
-        cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
-
+        #cData = Dc1.objects.filter(filer_id=slug).values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70')
+        cData = self.table_data.values('e_year', 'corp_30', 'zip_56', 'state_54', 'amount_70') #table data for auto update of charts on filtering
         #years
         years2 = cData.values('e_year').annotate(Sum('amount_70'))
         years2 = sorted(years2, key=lambda x: x['amount_70__sum'])
@@ -282,7 +245,8 @@ class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
         state2 = sorted(state2, key=lambda x: x['amount_70__sum'])
         state2labels = [ row['state_54'] for row in state2 ]
         state2data = [ row['amount_70__sum'] for row in state2 ]
-        axis_state = 10000.0 #dynamically scale axis rnd to 10k, or 10k if no results
+        #TO DO: Match dynamic scaling done in County Plot
+        axis_state = 0.0 #dynamically scale axis rnd to 10k, or 10k if no results
         if len(state2data) > 0:
             axis_state = math.ceil(float(state2data[-1]) / 
                 10000.0)*10000.0
@@ -300,15 +264,15 @@ class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
         #convert to data frame to pass into county plot func.
         fips2df = {"FIPS": fips2labels, "AMT": fips2data}
         df_fips = pd.DataFrame.from_dict(fips2df)
-
         df1_FIPS = Df1.objects.filter(filer_id=slug).values_list('zip__fips', flat=True)[0]
-        #print(df1_FIPS)
-        #external function calls for plot data generation
+
+        #external function calls for plot data generation (python Plotly offline (see helpers))
         df = cp.read_county_shp()
         df3 = cp.merge_dfs(df, df_fips)
         fig = cp.set_plot_data(df3, df1_FIPS)
         cont_by_county_plot_div = cp.get_div(fig)
-        #test2 = Dc1.objects.filter(filer_id='C01217').values_list('zip_56', 'zip_56__fips')
+
+        #format to one dict which will add to context data and send with request
         plot_data = {
             "cont_by_year_labels": years2labels,
             'cont_by_year_data': years2data,
@@ -325,12 +289,66 @@ class NYSCFFilerDetailView(ExportMixin, SingleTableMixin, generic.DetailView):
 
         return plot_data
 
+    def get(self, request, *args, **kwargs):
+        #print('hello_get')
+        #print(self.master_qs)
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        filterset_class = self.get_filterset_class()
+        self.filterset = self.get_filterset(filterset_class)
+        self.master_qs = self.filterset.qs.filter(filer_id=slug)
+        #print(self.master_qs)
+
+
+
+
+        #filterset_class = self.get_filterset_class()
+        #self.filterset = self.get_filterset(filterset_class)
+        self.object_list = self.master_qs #self.filterset.qs
+        #slug = self.kwargs.get(self.slug_url_kwarg)
+        #print(self.object_list)
+        # if self.filterset.is_valid() or not self.get_strict():
+        #     self.object_list = self.filterset.qs
+        # else:
+        #     self.object_list = self.filterset.queryset.none()
+
+        context = self.get_context_data(filter=self.filterset,
+                                        object_list=self.object_list)
+        return self.render_to_response(context)
+
+    def get_table(self, **kwargs):
+        """
+        OVERLOADED FROM SingleTableMixin in order to match table_data to filter_set
+        """
+        slug = self.kwargs.get(self.slug_url_kwarg)
+        #print("hello")
+        table_class = self.get_table_class()
+        self.table_data = self.object_list.filter(filer_id=slug)
+        table = table_class(data=self.table_data, **kwargs)
+        return RequestConfig(self.request, paginate=self.get_table_pagination(table)).configure(
+            table
+        )
+
+
+
     #override context data to pass additional info
     def get_context_data(self, **kwargs):
+        """
+        Overload to add context data and filter on urlConf Slug
+        """
+        slug = self.kwargs.get(self.slug_url_kwarg)
         context = super(NYSCFFilerDetailView, self).get_context_data(**kwargs)
-        #cart_product_form = CartAddProductForm()
         plot_data = self.get_plot_data(**kwargs)
         context['plot_data'] = plot_data
+        #TO DO: Find better way of ensuring we keep our filer_id=slug... dc1_set or something analogous?
+        #print(len(context['object_list']))
+        ##context['object_list'] = context['object_list'].filter(filer_id=slug) 
+        #context['dc1_list'] = self.master_qs #context['dc1_list'].filter(filer_id=slug)
+        #self.table_data = context['dc1_list'] #taking care of this in get_table didn't work here
+        context['df1'] = Df1.objects.get(filer_id=slug)
+        context['test3'] = 'hello' 
+        #print (context['df1'].values_list())
+        #print(len(context['object_list'].values_list()))
+        print(context.keys())
         return context
 
 

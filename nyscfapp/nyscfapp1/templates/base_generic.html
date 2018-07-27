@@ -29,7 +29,7 @@
 <div id="main">
 
 <div class="w3-green">
-  <button id="openNav" class="w3-button w3-teal w3-xlarge" onclick="w3_open()">&#9776;</button>
+  <button id="openNav" class="w3-button w3-green w3-xlarge" onclick="w3_open()">&#9776;</button>
   <div class="w3-container">
     {% block page_header %}<h1>nyscf</h1>{% endblock %}
   </div>
@@ -54,11 +54,12 @@ function w3_close() {
 
   <div class="container-fluid" >
       {% block content %}{% endblock %}
-  </div>
+  
       <script>
         $(document).ready(function(){
             {% block jquery %}{% endblock %}
         })
     </script>
+  </div>
 </body>
 </html>

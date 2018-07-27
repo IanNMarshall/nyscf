@@ -2,7 +2,18 @@
 
 {% block content %}
     <h1>All Filer List</h1>
+{% load bootstrap3 %}
 
+<div id="form_override">
+
+    <form action="" method="get" class="form form-inline">
+        {% bootstrap_form filter.form  layout='inline'%}
+        {% bootstrap_button 'filter button' %}
+
+    </form>
+
+</div>
+<p> test </p>
     {% if df1_list %}
     <table summary="filers">
       <tr>

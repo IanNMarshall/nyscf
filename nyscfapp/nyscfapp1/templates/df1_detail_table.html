@@ -2,6 +2,17 @@
 
 {% block plotly %}
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script>
+
+            window.onload = function () {
+                startTab();
+            };
+
+            function startTab() {
+                document.getElementById("defaultOpen").click();
+
+            }
+  </script>
 {% endblock %}
 
 {% block page_header  %}
@@ -13,39 +24,17 @@
 
 <div style="width: 100%; display: table;">
     <div style="display: table-row">
-    	<div id= "details" style="vertical-align: top; width: 25%; display: table-cell;">
+    	<div id= "details" style="vertical-align: top; width: 25%; display: table-cell; padding: 5px 5px;">
     		<h2>Summary:</h2>
     	</div>
-    	<div style="vertical-align: top; display: table-cell;">
+    	<div style="vertical-align: top; display: table-cell; padding: 5px 5px;">
     		<h2 style="vertical-align: top;">Plots:</h2>
-        <!--<p>Click on the buttons inside the tabbed menu:</p>
-
-        <div class="tab">
-          <button class="tablinks" onclick="openCity(event, 'London')">London</button>
-          <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
-          <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button>
-        </div>
-
-        <div id="London" class="tabcontent">
-          <h3>London</h3>
-          <p>London is the capital city of England.</p>
-        </div>
-
-        <div id="Paris" class="tabcontent">
-          <h3>Paris</h3>
-          <p>Paris is the capital of France.</p> 
-        </div>
-
-        <div id="Tokyo" class="tabcontent">
-          <h3>Tokyo</h3>
-          <p>Tokyo is the capital of Japan.</p>
-        </div>-->
     	</div>
     </div>
 
 
     <div style="display: table-row">
-        <div id= "details" style="vertical-align: top; width: 25%;height: 600px; display: table-cell;">
+        <div id= "details" style="vertical-align: top; width: 25%;height: 600px; display: table-cell; padding: 5px 5px;">
           
           <table summary="filers_detail">
           	<tr><th>Context</th><th>Filer Details</th>
@@ -65,12 +54,12 @@
 
           </table>
         </div>
-        <div style="display: table-cell; vertical-align: top;"> 
+        <div style="display: table-cell; vertical-align: top; padding: 5px 5px;"> 
         <div class="tab" >
           
-          <button class="tablinks" onclick="openPlot(event, 'cont_by_county_map')">Conts by County</button>
-          <button class="tablinks" onclick="openPlot(event, 'cont_by_state_map')">Conts by State</button>
-          <button class="tablinks" onclick="openPlot(event, 'cont_by_year_bar')">Conts by Year</button>
+          <button id="defaultOpen" class="tablinks" onclick="openPlot(event, 'cont_by_county_map')">Amt by NY County</button>
+          <button class="tablinks" onclick="openPlot(event, 'cont_by_state_map')">Amt by State</button>
+          <button class="tablinks" onclick="openPlot(event, 'cont_by_year_bar')">Amt by Year</button>
         </div>
 
         <div id="cont_by_county_map" class="tabcontent">
@@ -80,14 +69,14 @@
         <div id="cont_by_state_map" class="tabcontent">
           <!--<div id= "cont_by_state_map" style="vertical-align: top;"></div>-->
           <!--<p>My wife used to be a size 2</p>-->
-          <div id="cont_by_state_plot"></div>
+          <div id="cont_by_state_plot" style="vertical-align: top; horizontal-align: left;" ></div>
 
         </div>
 
         
 
         <div id="cont_by_year_bar" class="tabcontent">
-          <h3>cont_by_year_bar</h3>
+          <h3>Amount By Year Bar Chart</h3>
           <p>Coming Soon.</p>
         </div>
       </div>
@@ -98,13 +87,25 @@
 </div>
 
 <br></br>
+<div class="container-fluid" >
+<h2>Contribution/Transaction Data For: {{df1.filer_name}}</h2>
+<p>Filter by any number of columns. Note: Charts will dynamically update based on filtering. For contributions only, use the preset button or select A, B, C, D, G and P from the Transaction Code Select Box.</p>
+<div id="form_override2">
+{% if filter %}
+    <form action="" method="get" class="form form-inline">
+        {% bootstrap_form filter.form  layout='inline'%}
+        {% bootstrap_button 'Apply Filter' %}
+        <button onclick="selectContribOnly(event)">Contributions Only</button>
 
-<h2>All Contributions Data For: {{df1.filer_name}}</h2>
+    </form>
+{% endif %}
+</div>
 {% load export_url from django_tables2 %}
 <a href=" {% export_url "csv" %} ">Export to CSV</a>
 <div style="overflow:auto;">
 {% load render_table from django_tables2 %}
 {% render_table table 'django_tables2/bootstrap.html' %}
+</div>
 </div>
 <!--<script>
 function openCity(evt, cityName) {
@@ -139,7 +140,46 @@ function openPlot(evt, plotName) {
 
 
 
+<script>
+function selectContribOnly(evt) {
+  //document.getElementById("id_transaction_code").getElementsByTagName("option")[0]
+  //console.log(document.getElementById("id_transaction_code").getElementsByTagName("option"))
+  //console.log("hello")
+  //for (i =0; document.getElementById("id_transaction_code").getElementsByTagName("option").length) {
+    //tcOption.setAttribute("selected", true);
+  //}
+  var i = 0;
+  document.getElementById("id_transaction_code").getElementsByTagName("option")[i].setAttribute("selected", "selected");
+  // var j = 2;
+  // if (j==2) {
+  //   document.getElementById("id_transaction_code").getElementsByTagName("option")[j].removeAttribute("selected");
+  // }
+  var tcOpts = document.getElementById("id_transaction_code").getElementsByTagName("option");
+  for (i=0; i<document.getElementById("id_transaction_code").getElementsByTagName("option").length; i++) {
+    if (tcOpts[i].value == "A" || tcOpts[i].value == "B" || tcOpts[i].value == "C"  || tcOpts[i].value == "D" 
+      || tcOpts[i].value == "G"  || tcOpts[i].value == "P" ) {
+      tcOpts[i].setAttribute("selected", "selected");
+    }
+    else {
+      tcOpts[i].removeAttribute("selected");
+    }
 
+  }
+  // for (i = 0; i < document.getElementById("id_transaction_code").getElementsByTagName("option").length; i++) {
+  //     //if (document.getElementById("id_transaction_code").getElementsByTagName("option")[i].value == 'A') {
+
+  //     if (i==1) {
+  //       document.getElementById("id_transaction_code").getElementsByTagName("option")[i].setAttribute("selected", true);
+  //     }
+  //     else {
+  //       document.getElementById("id_transaction_code").getElementsByTagName("option")[i].setAttribute("selected", false);
+  //     }
+  // } 
+
+
+  }
+  //document.getElementsByTagName("H1")[0].setAttribute("class", "democlass"); 
+</script>
 
 
 
@@ -194,7 +234,7 @@ function articleChart(){
                     [0.8, 'rgb(117,107,177)'], [1, 'rgb(84,39,143)']
                   ],
                 colorbar: {
-                  title: 'Contributions USD',
+                  title: 'USD',
                   thickness: 10
                 },
                 marker: {
@@ -206,7 +246,11 @@ function articleChart(){
               }];
 
       var layout = {
-              title: 'Contributions by State Map',
+              //title: 'Contributions by State Map',
+              margin: {t: 20, b: 20, r: 20, l: 20},
+              width: 800,
+              height: 600,
+              dragmode: 'select',
               geo:{
                 scope: 'usa',
                 showlakes: true,

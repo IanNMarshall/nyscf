@@ -18,13 +18,10 @@ th {
     color: white;
 }
 
-#form_override input { 
-    
-}
-
 
 #form_override .form-group {
     width: 19%;
+    padding: 5px;
 }
 #form_override input { 
     width: 100%;  
@@ -32,6 +29,39 @@ th {
 #form_override select { 
     width: 100%; 
 }
+
+#form_override2 .form-group {
+    width: 19%;
+    padding: 5px;
+}
+#form_override2 input { 
+    width: 100%;  
+}
+#form_override2 select { 
+    width: 100%;
+}
+
+#form_override2 button {
+    background-color:  #6a51a3; /* Light-ish purple */
+    border: none;
+    border-radius: 5px;
+    color: white;
+    padding: 20px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    height: 100%;
+    width: 19%;
+}
+
+
+}
+
+
+
 /* New way of prioritization */
 #bootstrap-overrides h1 { /* 100+1=101 priority score, yay! */
   line-height: 1;

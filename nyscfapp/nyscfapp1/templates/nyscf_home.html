@@ -7,8 +7,16 @@
 
 {% block content %}
 
+<h2>About:</h2>
+  <p> This website can be used for searching and visualizing New York State campaign finance data from 1999-Present. All data is sourced from New York States election site. I do not personally guarantee the accuracy of this data, please see <a href=https://www.elections.ny.gov/CFViewReports.html>https://www.elections.ny.gov/CFViewReports.html</a> for details on filing and data accuracy. This site has no affiliation with New York State.</p>
 
-  <p> This is a basic Django website developed for searching and visualization of New York State campaign finance data. All data is sourced from New York States election site. I do not personally guarantee the accuracy of this data, please see <a><href=https://www.elections.ny.gov/CFViewReports.html for details>https://www.elections.ny.gov/CFViewReports.html</a> for details on filing and data accuracy. This site has no affiliation with New York State or any political entity.</p>
+<h2>Instructions:</h2>
+<ul>
+    <li>View and search a list of canditates and committees by navigating to the All Filers List in the sidebar menu or <a href="{% url 'filers_filter' %}"> clicking here </a></li>
+    <li>Click on a Filer ID to view list of all contributions and transactions reported by that filer</li>
+    <li>Filter contributions to dynamically update charts.</li>
+  </ul>
+
 
 <h2>Basic Stats:</h2>
 
