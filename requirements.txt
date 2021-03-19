@@ -12,7 +12,7 @@ django-bootstrap3==10.0.1
 django-filter==1.1.0
 django-filters==0.2.1
 django-tables2==1.21.2
-djangorestframework==3.8.2
+djangorestframework==3.11.2
 et-xmlfile==1.0.1
 Fiona==1.7.12
 geopandas==0.3.0
